@@ -1,13 +1,13 @@
 {
   "name" : "Fake API",
   "path" : "/api/v1/fake",
-  "state" : "published",
+  "state" : "unpublished",
   "version" : "1.0.0",
   "organization" : "API Development",
   "apiDefinition" : "../fake-api/endpoints/Greet.json",
   "backendBasepath" : "http://192.168.65.1:8080/api",
   "customProperties" : {
-    "cacheType" : "requestUri"
+    "cacheType" : "disabled"
   },
   "authenticationProfiles" : [ {
     "name" : "_default",
