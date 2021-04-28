@@ -361,7 +361,7 @@
 				{
 					"name": "delay",
 					"type": "number",
-					"value": "5000",
+					"value": "1",
 					"metaName": "Delay",
 					"metaDescription": "The length of delay, in milliseconds."
 				}
