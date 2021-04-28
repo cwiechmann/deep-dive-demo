@@ -1,0 +1,22 @@
+{
+  "name" : "Fake API",
+  "path" : "/api/v1/fake",
+  "state" : "unpublished",
+  "version" : "1.0.0",
+  "organization" : "API Development",
+  "apiDefinition" : "../fake-api/endpoints/Greet.json",
+  "backendBasepath" : "http://192.168.65.1:8080/api",
+  "customProperties" : {
+    "cacheType" : "requestUri"
+  },
+  "authenticationProfiles" : [ {
+    "name" : "_default",
+    "isDefault" : true,
+    "parameters" : {
+      "username" : "v/1shf0KvDaK/uFM9xJlhBrPFYI785Us",
+      "password" : ""
+    },
+    "type" : "http_basic"
+  } ],
+  "clientOrganizations" : [ "Partners", "Plexus Health", "FastCars", "Community", "API Development", "FHIR" ]
+}

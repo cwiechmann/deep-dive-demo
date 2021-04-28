@@ -1,0 +1,47 @@
+flow-nodes:
+  array-utils:
+    name: Array utils
+    icon: icon.svg
+    description: Utility flow node to handle arrays.
+    category: general
+    methods:
+      filterArray: 
+        name: Filter an array
+        description: Filters a given array containing a number of objects for a given property value.
+        parameters:
+          inputArray:
+            name: Input Array
+            description: The given array which should be filtered
+            required: true
+            schema:
+              type: array
+          propertyName:
+            name: Property name
+            description: Property name used to filter the array
+            required: true
+            schema:
+              type: string
+          propertyValue:
+            name: Property value
+            description: Property value used to filter the array
+            required: false
+            schema:
+              oneOf:
+                - type: integer
+                - type: string
+                - type: object
+        returns:
+          name: Next
+          description: Returns a filtered version of the array
+          context: $.filteredArray
+          schema:
+            type: array
+        throws:
+          name: Error
+          description: An unexpected error was encountered.
+          context: $.error
+          schema:
+            type: object
+            properties:
+              message:
+                type: string

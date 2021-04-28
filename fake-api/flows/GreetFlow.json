@@ -1,0 +1,410 @@
+{
+	"schemaVersion": "4",
+	"info": {
+		"name": "Greet flow",
+		"description": "Greets a user",
+		"author": "support@axway.com",
+		"license": "ISC"
+	},
+	"parameter": {
+		"properties": {
+			"params": {
+				"type": "object",
+				"description": "The parameters from the endpoint.",
+				"properties": {
+					"username": {
+						"type": "string",
+						"description": "The username"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"username"
+				]
+			},
+			"request": {
+				"type": "object",
+				"description": "The HTTP request."
+			},
+			"config": {
+				"type": "object",
+				"description": "The service's configuration"
+			},
+			"env": {
+				"type": "object",
+				"description": "The host OS environment"
+			}
+		},
+		"additionalProperties": false,
+		"required": [
+			"params",
+			"request",
+			"config",
+			"env"
+		]
+	},
+	"start": "condition.1",
+	"nodes": {
+		"response.success": {
+			"type": "nodehandler://axway-flow/http",
+			"name": "Success (HTTP 200)",
+			"method": "setresponse",
+			"parameters": [
+				{
+					"name": "status",
+					"value": "200",
+					"type": "number",
+					"metaName": "Status",
+					"metaDescription": "The HTTP status code"
+				},
+				{
+					"name": "body",
+					"type": "jsonpath",
+					"value": "$.result",
+					"metaName": "Body",
+					"metaDescription": "The response payload"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.response",
+					"metaName": "Next"
+				}
+			},
+			"metaMethod": "Set HTTP Response"
+		},
+		"response.error": {
+			"type": "nodehandler://axway-flow/http",
+			"name": "Bad Request (HTTP 400)",
+			"method": "setresponse",
+			"parameters": [
+				{
+					"name": "status",
+					"value": "400",
+					"type": "number",
+					"metaName": "Status",
+					"metaDescription": "The HTTP status code"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.response",
+					"metaName": "Next"
+				}
+			},
+			"metaMethod": "Set HTTP Response"
+		},
+		"condition.1": {
+			"type": "nodehandler://axway-flow/condition",
+			"name": "Check Username",
+			"method": "exists",
+			"parameters": [
+				{
+					"name": "source",
+					"value": "$.params.username",
+					"metaName": "Source",
+					"metaDescription": "The input to test."
+				}
+			],
+			"outputs": {
+				"true": {
+					"context": "$.exists",
+					"routes": [
+						"jsonPlaceholder.1"
+					],
+					"metaName": "True"
+				},
+				"false": {
+					"context": "$.exists",
+					"routes": [
+						"response.error"
+					],
+					"metaName": "False"
+				}
+			},
+			"metaMethod": "Exists"
+		},
+		"array-utils.1": {
+			"type": "nodehandler://api-builder-plugin-array-utils/array-utils",
+			"name": "Filter posts",
+			"method": "filterArray",
+			"parameters": [
+				{
+					"name": "propertyName",
+					"type": "string",
+					"value": "\"userId\"",
+					"metaName": "Property name",
+					"metaDescription": "Property name used to filter the array"
+				},
+				{
+					"name": "propertyValue",
+					"type": "jsonpath",
+					"value": "$.params.username",
+					"metaName": "Property value",
+					"metaDescription": "Property value used to filter the array"
+				},
+				{
+					"name": "inputArray",
+					"type": "jsonpath",
+					"value": "$.allPosts.data",
+					"metaName": "Input Array",
+					"metaDescription": "The given array which should be filtered"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.userPosts",
+					"routes": [
+						"redis.2"
+					],
+					"metaName": "Next"
+				},
+				"error": {
+					"context": "$.error",
+					"routes": [],
+					"metaName": "Error"
+				}
+			},
+			"metaMethod": "Filter an array"
+		},
+		"jsonPlaceholder.1": {
+			"type": "nodehandler://@axway/api-builder-plugin-fn-swagger/jsonPlaceholder",
+			"name": "Get user for ID",
+			"method": "getUser",
+			"parameters": [
+				{
+					"name": "id",
+					"type": "jsonpath",
+					"value": "$.params.username",
+					"metaName": "id",
+					"metaDescription": "The ID of the user to retrieve"
+				}
+			],
+			"outputs": {
+				"200": {
+					"routes": [
+						"redis.1"
+					],
+					"context": "$.userDetails",
+					"metaName": "200"
+				},
+				"404": {
+					"routes": [
+						"http.1"
+					],
+					"context": "$.response",
+					"metaName": "404"
+				},
+				"error": {
+					"routes": [],
+					"context": "$.error",
+					"metaName": "Error"
+				},
+				"default": {
+					"routes": [],
+					"context": "$.response",
+					"metaName": "Default"
+				}
+			},
+			"metaMethod": "getUser"
+		},
+		"jsonPlaceholder.2": {
+			"type": "nodehandler://@axway/api-builder-plugin-fn-swagger/jsonPlaceholder",
+			"name": "Get all posts",
+			"method": "getPosts",
+			"parameters": [],
+			"outputs": {
+				"200": {
+					"routes": [
+						"array-utils.1"
+					],
+					"context": "$.allPosts",
+					"metaName": "200"
+				},
+				"error": {
+					"routes": [],
+					"context": "$.error",
+					"metaName": "Error"
+				},
+				"default": {
+					"routes": [],
+					"context": "$.response",
+					"metaName": "Default"
+				}
+			},
+			"metaMethod": "getPosts"
+		},
+		"javascript.1": {
+			"type": "nodehandler://@axway/api-builder-plugin-fn-javascript/javascript",
+			"name": "Create result",
+			"method": "Execute",
+			"parameters": [
+				{
+					"name": "data",
+					"type": "jsonpath",
+					"value": "$",
+					"metaName": "Data",
+					"metaDescription": "The value to apply as the `data` argument to the JavaScript code. For objects and arrays, `data` is passed by reference."
+				},
+				{
+					"name": "code",
+					"type": "string",
+					"value": "\"data.userDetails.data.posts = data.userPosts;\\n  return data.userDetails.data;\"",
+					"metaName": "Code",
+					"metaDescription": "A JavaScript function body. Supports `await` and returning promises."
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.result",
+					"routes": [
+						"response.success"
+					],
+					"metaName": "Next"
+				},
+				"error": {
+					"context": "$.error",
+					"routes": [
+						"response.error"
+					],
+					"metaName": "Error"
+				}
+			},
+			"metaMethod": "Execute"
+		},
+		"redis.1": {
+			"type": "nodehandler://@axway-api-builder-ext/api-builder-plugin-fn-redis/redis",
+			"name": "Get user posts from cache",
+			"method": "get",
+			"parameters": [
+				{
+					"name": "key",
+					"type": "jsonpath",
+					"value": "$.params.username",
+					"metaName": "Key",
+					"metaDescription": "They key used to retrieve value from Redis."
+				}
+			],
+			"outputs": {
+				"next": {
+					"routes": [
+						"javascript.1"
+					],
+					"context": "$.userPosts",
+					"metaName": "Next"
+				},
+				"noResult": {
+					"routes": [
+						"delay.1"
+					],
+					"context": "$.value",
+					"metaName": "No Result"
+				},
+				"error": {
+					"routes": [
+						"response.error"
+					],
+					"context": "$.error",
+					"metaName": "Error"
+				}
+			},
+			"metaMethod": "Get"
+		},
+		"redis.2": {
+			"type": "nodehandler://@axway-api-builder-ext/api-builder-plugin-fn-redis/redis",
+			"name": "Cache user posts",
+			"method": "set",
+			"parameters": [
+				{
+					"name": "key",
+					"type": "jsonpath",
+					"value": "$.params.username",
+					"metaName": "Key",
+					"metaDescription": "They key used to store the value in Redis."
+				},
+				{
+					"name": "value",
+					"type": "jsonpath",
+					"value": "$.userPosts",
+					"metaName": "Value",
+					"metaDescription": "The value to store in Redis along with the key. It must be either a String or Date, all other types are converted into Strings using JSON.stringify."
+				},
+				{
+					"name": "expiremilliseconds",
+					"type": "number",
+					"value": "300000",
+					"metaName": "Expire In Milliseconds",
+					"metaDescription": "The time-to-live for this key in milliseconds"
+				}
+			],
+			"outputs": {
+				"next": {
+					"routes": [
+						"javascript.1"
+					],
+					"context": "$.result",
+					"metaName": "Next"
+				},
+				"error": {
+					"routes": [],
+					"context": "$.error",
+					"metaName": "Error"
+				}
+			},
+			"metaMethod": "Set"
+		},
+		"delay.1": {
+			"type": "nodehandler://axway-flow/delay",
+			"name": "Delay",
+			"method": "delay",
+			"parameters": [
+				{
+					"name": "delay",
+					"type": "number",
+					"value": "100000",
+					"metaName": "Delay",
+					"metaDescription": "The length of delay, in milliseconds."
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.delayed",
+					"routes": [
+						"jsonPlaceholder.2"
+					],
+					"metaName": "Next"
+				}
+			},
+			"metaMethod": "Delay"
+		},
+		"http.1": {
+			"type": "nodehandler://axway-flow/http",
+			"name": "User not found",
+			"method": "setresponse",
+			"parameters": [
+				{
+					"name": "status",
+					"type": "number",
+					"value": "404",
+					"metaName": "Status",
+					"metaDescription": "The HTTP status code"
+				},
+				{
+					"name": "body",
+					"type": "object",
+					"value": "{\"message\":\"User not found\"}",
+					"metaName": "Body",
+					"metaDescription": "The response payload"
+				}
+			],
+			"outputs": {
+				"next": {
+					"context": "$.response",
+					"routes": [],
+					"metaName": "Next"
+				}
+			},
+			"metaMethod": "Set HTTP Response"
+		}
+	}
+}
