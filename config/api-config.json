@@ -1,7 +1,7 @@
 {
   "name" : "Fake API",
   "path" : "/api/v1/fake",
-  "state" : "deprecated",
+  "state" : "published",
   "version" : "1.0.0",
   "organization" : "API Development",
   "apiDefinition" : "../fake-api/endpoints/Greet.json",
@@ -9,6 +9,20 @@
   "customProperties" : {
     "cacheType" : "disabled"
   },
+  "securityProfiles" : [ {
+    "name" : "_default",
+    "isDefault" : true,
+    "devices" : [ {
+      "name" : "API Key",
+      "type" : "apiKey",
+      "order" : 1,
+      "properties" : {
+        "apiKeyFieldName" : "KeyId",
+        "takeFrom" : "HEADER",
+        "removeCredentialsOnSuccess" : "true"
+      }
+    } ]
+  } ],
   "authenticationProfiles" : [ {
     "name" : "_default",
     "isDefault" : true,
