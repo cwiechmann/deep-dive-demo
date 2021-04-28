@@ -1,7 +1,7 @@
 {
   "name" : "Fake API",
   "path" : "/api/v1/fake",
-  "state" : "unpublished",
+  "state" : "deprecated",
   "version" : "1.0.0",
   "organization" : "API Development",
   "apiDefinition" : "../fake-api/endpoints/Greet.json",
